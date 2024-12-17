@@ -3,12 +3,14 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class MainFrame extends JFrame {
     private JTable table;
     private DefaultTableModel tableModel;
-    private JTextField txtName, txtDate, txtId, txtSearch;
+    private JTextField txtName, txtDate, txtId, txtSearch, txtToday;
     private JComboBox<String> searchCriteria;
 
     public MainFrame() {
@@ -34,6 +36,9 @@ public class MainFrame extends JFrame {
         JLabel lblDate = new JLabel("Tanggal (YYYY-MM-DD):");
         txtDate = new JTextField();
 
+        JLabel lblToday = new JLabel("Tanggal Hari Ini (Manual):");
+        txtToday = new JTextField(LocalDate.now().toString()); // Default ke hari ini
+
         // Penempatan komponen
         gbc.gridx = 0; gbc.gridy = 0;
         panelInput.add(lblId, gbc);
@@ -50,6 +55,11 @@ public class MainFrame extends JFrame {
         gbc.gridx = 1; gbc.gridy = 2;
         panelInput.add(txtDate, gbc);
 
+        gbc.gridx = 0; gbc.gridy = 3;
+        panelInput.add(lblToday, gbc);
+        gbc.gridx = 1; gbc.gridy = 3;
+        panelInput.add(txtToday, gbc);
+
         // Tombol CRUD
         JButton btnAdd = new JButton("Tambah");
         JButton btnUpdate = new JButton("Update");
@@ -62,7 +72,7 @@ public class MainFrame extends JFrame {
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
 
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         panelInput.add(buttonPanel, gbc);
 
         add(panelInput, BorderLayout.NORTH);
@@ -145,6 +155,34 @@ public class MainFrame extends JFrame {
         List<String[]> birthdays = DatabaseHelper.getAllBirthdays();
         for (String[] row : birthdays) {
             tableModel.addRow(row);
+        }
+        checkUpcomingBirthdays();
+    }
+
+    private void checkUpcomingBirthdays() {
+        String todayInput = txtToday.getText();
+        try {
+            LocalDate today = LocalDate.parse(todayInput);
+            List<String[]> birthdays = DatabaseHelper.getAllBirthdays();
+
+            for (String[] row : birthdays) {
+                String name = row[1];
+                LocalDate birthday = LocalDate.parse(row[2]);
+                LocalDate nextBirthday = birthday.withYear(today.getYear());
+
+                if (nextBirthday.isBefore(today) || nextBirthday.equals(today)) {
+                    nextBirthday = nextBirthday.plusYears(1);
+                }
+
+                long daysUntil = ChronoUnit.DAYS.between(today, nextBirthday);
+                if (daysUntil <= 7) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Heyy ulang tahun " + name + " tinggal " + daysUntil + " hari lagi loh bro!\nPada tanggal: " + nextBirthday,
+                        "Pengingat Ulang Tahun", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Format tanggal salah bro! Gunakan format YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
