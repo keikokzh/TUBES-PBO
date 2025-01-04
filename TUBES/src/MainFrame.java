@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -116,8 +117,13 @@ public class MainFrame extends JFrame {
         btnAdd.addActionListener(e -> {
             String name = txtName.getText();
             String date = txtDate.getText();
-            DatabaseHelper.addBirthday(name, date);
-            loadTableData();
+            if (isDateValid(date)) {
+                DatabaseHelper.addBirthday(name, date);
+                clearInputFields();
+                loadTableData();
+            } else {
+                JOptionPane.showMessageDialog(this, "Format tanggal salah! Harap gunakan format YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         // Tombol Update
@@ -126,10 +132,15 @@ public class MainFrame extends JFrame {
                 int id = Integer.parseInt(txtId.getText());
                 String name = txtName.getText();
                 String date = txtDate.getText();
-                DatabaseHelper.updateBirthday(id, name, date);
-                loadTableData();
+                if (isDateValid(date)) {
+                    DatabaseHelper.updateBirthday(id, name, date);
+                    clearInputFields();
+                    loadTableData();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Format tanggal salah! Harap gunakan format YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Belum ada data yang dipilih bro", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Belum ada data yang dipilih.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -138,9 +149,10 @@ public class MainFrame extends JFrame {
             try {
                 int id = Integer.parseInt(txtId.getText());
                 DatabaseHelper.deleteBirthday(id);
+                clearInputFields();
                 loadTableData();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Belum ada data yang dipilih bro", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Belum ada data yang dipilih.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -202,6 +214,21 @@ public class MainFrame extends JFrame {
         for (String[] row : results) {
             tableModel.addRow(row);
         }
+    }
+
+    private boolean isDateValid(String date) {
+        try {
+            LocalDate.parse(date);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    private void clearInputFields() {
+        txtId.setText("");
+        txtName.setText("");
+        txtDate.setText("");
     }
 
     public static void main(String[] args) {
