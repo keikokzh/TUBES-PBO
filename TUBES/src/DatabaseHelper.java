@@ -92,4 +92,20 @@ public class DatabaseHelper {
         }
         return results;
     }
+
+    public static List<String[]> searchByYear(String year) {
+        List<String[]> results = new ArrayList<>();
+        String query = "SELECT * FROM birthdays WHERE YEAR(date) = ?";
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, year);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                results.add(new String[]{String.valueOf(rs.getInt("id")), rs.getString("name"), rs.getString("date")});
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+    
 }
