@@ -31,8 +31,5 @@ public class BirthdayReminder extends BaseReminder {
         }
     }
 
-    @Override
-    public void loadFromDatabase() {
-        // Implementasi untuk memuat ulang tahun dari database jika diperlukan
-    }
+
 }
